@@ -1,9 +1,12 @@
+import csv
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
 from .models import Course, Student
+from django.http import HttpResponse
 from .serializers import (
     CourseSerializer,
     StudentSerializer,
@@ -216,3 +219,33 @@ class StudentDetailView(APIView):
 
         student.delete()
         return Response(status=204)
+
+class ExportStudentsCSVView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, course_id):
+        students = Student.objects.filter(
+            course__id=course_id,
+            course__teacher=request.user
+        )
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="students.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow([
+            'Full name',
+            'Phone number',
+            'Backup phone number',
+            'Joined at'
+        ])
+
+        for student in students:
+            writer.writerow([
+                student.full_name,
+                student.phone_number,
+                student.backup_phone_number or '',
+                student.joined_at.strftime('%Y-%m-%d %H:%M')
+            ])
+
+        return response

@@ -10,7 +10,8 @@ from .views import(
     CourseView,
     CourseDetailView,
     StudentView,
-    StudentDetailView
+    StudentDetailView,
+    ExportStudentsCSVView
 )
 
 urlpatterns = [
@@ -35,6 +36,11 @@ urlpatterns = [
     'courses/<int:course_id>/',
         CourseDetailView.as_view(),
         name='course-detail'
+    ),
+    path(
+        'courses/<int:course_id>/students/export/csv/',
+        ExportStudentsCSVView.as_view(),
+        name='export_students_csv'
     ),
 
 ]
